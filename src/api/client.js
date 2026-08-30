@@ -74,6 +74,13 @@ export const api = {
     cachedCsrfToken = null;
     return result;
   },
+  register: async (username, password) => {
+    // register_view also calls Django's login() on success, same CSRF
+    // rotation as the login() method above.
+    const result = await request('/auth/register/', { method: 'POST', body: { username, password } });
+    cachedCsrfToken = null;
+    return result;
+  },
   logout: async () => {
     const result = await request('/auth/logout/', { method: 'POST' });
     cachedCsrfToken = null;

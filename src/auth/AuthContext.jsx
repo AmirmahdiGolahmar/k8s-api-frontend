@@ -23,13 +23,21 @@ export function AuthProvider({ children }) {
     return loggedInUser;
   }, []);
 
+  // register_view logs the new account in server-side, same as login --
+  // this mirrors that by updating local state the same way.
+  const register = useCallback(async (username, password) => {
+    const newUser = await api.register(username, password);
+    setUser(newUser);
+    return newUser;
+  }, []);
+
   const logout = useCallback(async () => {
     await api.logout();
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

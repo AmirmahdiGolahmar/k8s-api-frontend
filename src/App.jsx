@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthContext';
 import RequireAuth from './components/RequireAuth';
 import AppLayout from './components/AppLayout';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Clusters from './pages/Clusters';
 import Namespaces from './pages/Namespaces';
 import Apps from './pages/Apps';
@@ -14,6 +15,7 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route
             element={
               <RequireAuth>
