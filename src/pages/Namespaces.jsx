@@ -18,7 +18,10 @@ export default function Namespaces() {
   // Staff can switch to seeing every namespace that actually exists in the
   // cluster (kube-system, default, anything created outside this app) --
   // that view reads straight from k8s and has no id/owner/delete/access.
-  const [view, setView] = useState('tracked');
+  // Staff default to that full view (not everyone needs to discover the
+  // toggle to see kube-system etc); regular users don't see the toggle at
+  // all, so 'tracked' is the only view that ever applies to them.
+  const [view, setView] = useState(user.is_staff ? 'live' : 'tracked');
   const [liveNamespaces, setLiveNamespaces] = useState([]);
   const [liveLoading, setLiveLoading] = useState(false);
 
