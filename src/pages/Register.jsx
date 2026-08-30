@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, Card, Form, Input, Typography, Alert } from 'antd';
+import { UserOutlined, LockOutlined, UserAddOutlined, SafetyOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
@@ -28,16 +29,19 @@ export default function Register() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <Card style={{ width: 360 }}>
-        <Typography.Title level={3} style={{ textAlign: 'center' }}>
-          Create account
-        </Typography.Title>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <UserAddOutlined style={{ fontSize: 32, color: '#e0914f' }} />
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            Create account
+          </Typography.Title>
+        </div>
         {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-            <Input autoFocus />
+            <Input prefix={<UserOutlined />} autoFocus />
           </Form.Item>
           <Form.Item name="password" label="Password" rules={[{ required: true }]} hasFeedback>
-            <Input.Password />
+            <Input.Password prefix={<LockOutlined />} />
           </Form.Item>
           <Form.Item
             name="confirmPassword"
@@ -54,10 +58,10 @@ export default function Register() {
               }),
             ]}
           >
-            <Input.Password />
+            <Input.Password prefix={<SafetyOutlined />} />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" block loading={submitting}>
+            <Button type="primary" htmlType="submit" block loading={submitting} icon={<UserAddOutlined />}>
               Create account
             </Button>
           </Form.Item>

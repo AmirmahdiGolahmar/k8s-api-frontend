@@ -1,5 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Button, Table, Modal, Form, Input, Select, Radio, Typography, message, Tag, Descriptions } from 'antd';
+import {
+  CloudUploadOutlined,
+  PlusOutlined,
+  EyeOutlined,
+  ClockCircleOutlined,
+  SyncOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  PauseCircleOutlined,
+  FileOutlined,
+  ScheduleOutlined,
+} from '@ant-design/icons';
 import { api } from '../api/client';
 
 const STATUS_COLORS = {
@@ -9,6 +21,14 @@ const STATUS_COLORS = {
   failed: 'red',
   active: 'green',
   disabled: 'default',
+};
+const STATUS_ICONS = {
+  pending: <ClockCircleOutlined />,
+  running: <SyncOutlined spin />,
+  completed: <CheckCircleOutlined />,
+  failed: <CloseCircleOutlined />,
+  active: <CheckCircleOutlined />,
+  disabled: <PauseCircleOutlined />,
 };
 
 export default function Backups() {
@@ -82,14 +102,26 @@ export default function Backups() {
   };
 
   const columns = [
-    { title: 'Type', dataIndex: 'type', render: (value) => <Tag>{value}</Tag> },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      render: (value) => <Tag icon={value === 'schedule' ? <ScheduleOutlined /> : <FileOutlined />}>{value}</Tag>,
+    },
     { title: 'ID', render: (_, record) => record.backup_id ?? record.schedule_id },
-    { title: 'Status', dataIndex: 'status', render: (value) => <Tag color={STATUS_COLORS[value] ?? 'default'}>{value}</Tag> },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      render: (value) => (
+        <Tag icon={STATUS_ICONS[value]} color={STATUS_COLORS[value] ?? 'default'}>
+          {value}
+        </Tag>
+      ),
+    },
     {
       title: '',
       key: 'actions',
       render: (_, record) => (
-        <Button size="small" onClick={() => handleView(record.backup_id ?? record.schedule_id)}>
+        <Button size="small" icon={<EyeOutlined />} onClick={() => handleView(record.backup_id ?? record.schedule_id)}>
           View
         </Button>
       ),
@@ -98,11 +130,11 @@ export default function Backups() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          Backups
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
+        <Typography.Title level={3} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <CloudUploadOutlined /> Backups
         </Typography.Title>
-        <Button type="primary" onClick={() => setModalOpen(true)} disabled={!appId}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)} disabled={!appId}>
           New backup
         </Button>
       </div>

@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Button, Table, Modal, Form, Input, Select, Popconfirm, Typography, message, Tag, Space, Segmented } from 'antd';
+import {
+  PartitionOutlined,
+  PlusOutlined,
+  SafetyOutlined,
+  DeleteOutlined,
+  GlobalOutlined,
+  LockOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
 import AccessModal from '../components/AccessModal';
@@ -114,9 +123,9 @@ export default function Namespaces() {
             dataIndex: 'is_accessible',
             render: (value, record) =>
               value ? (
-                <Tag color="green">accessible</Tag>
+                <Tag icon={<GlobalOutlined />} color="green">accessible</Tag>
               ) : (
-                <Tag color="orange">
+                <Tag icon={<LockOutlined />} color="orange">
                   restricted{record.allowed_users?.length ? ` (${record.allowed_users.length})` : ''}
                 </Tag>
               ),
@@ -129,12 +138,12 @@ export default function Namespaces() {
       render: (_, record) => (
         <Space>
           {user.is_staff && (
-            <Button size="small" onClick={() => setAccessRecord(record)}>
+            <Button size="small" icon={<SafetyOutlined />} onClick={() => setAccessRecord(record)}>
               Access
             </Button>
           )}
           <Popconfirm title="Delete this namespace?" onConfirm={() => handleDelete(record.id)}>
-            <Button danger size="small">
+            <Button danger size="small" icon={<DeleteOutlined />}>
               Delete
             </Button>
           </Popconfirm>
@@ -147,18 +156,26 @@ export default function Namespaces() {
   // so there's no id to delete/manage access by.
   const liveColumns = [
     { title: 'Name', dataIndex: 'name' },
-    { title: 'Status', dataIndex: 'status' },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      render: (value) => (
+        <Tag icon={value === 'Active' ? <CheckCircleOutlined /> : undefined} color={value === 'Active' ? 'green' : 'default'}>
+          {value}
+        </Tag>
+      ),
+    },
     { title: 'UID', dataIndex: 'uid' },
     { title: 'Created', dataIndex: 'created_at' },
   ];
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          Namespaces
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
+        <Typography.Title level={3} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <PartitionOutlined /> Namespaces
         </Typography.Title>
-        <Button type="primary" onClick={() => setModalOpen(true)} disabled={!clusterId}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)} disabled={!clusterId}>
           Add namespace
         </Button>
       </div>

@@ -1,11 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Button, Table, Modal, Form, Input, InputNumber, Select, Popconfirm, Typography, message, Tag } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import {
+  ReloadOutlined,
+  AppstoreOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  CheckCircleOutlined,
+  SyncOutlined,
+  WarningOutlined,
+} from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
 import ImageCatalogPicker from '../components/ImageCatalogPicker';
 
 const STATUS_COLORS = { active: 'green', deleting: 'orange', missing: 'red' };
+const STATUS_ICONS = { active: <CheckCircleOutlined />, deleting: <SyncOutlined spin />, missing: <WarningOutlined /> };
 
 export default function Apps() {
   const { user } = useAuth();
@@ -100,7 +109,11 @@ export default function Apps() {
     {
       title: 'Status',
       dataIndex: 'status',
-      render: (value) => <Tag color={STATUS_COLORS[value] ?? 'default'}>{value}</Tag>,
+      render: (value) => (
+        <Tag icon={STATUS_ICONS[value]} color={STATUS_COLORS[value] ?? 'default'}>
+          {value}
+        </Tag>
+      ),
     },
     {
       title: '',
@@ -116,7 +129,7 @@ export default function Apps() {
             Reload
           </Button>
           <Popconfirm title="Delete this app?" onConfirm={() => handleDelete(record.id)}>
-            <Button danger size="small">
+            <Button danger size="small" icon={<DeleteOutlined />}>
               Delete
             </Button>
           </Popconfirm>
@@ -127,11 +140,11 @@ export default function Apps() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          Apps
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
+        <Typography.Title level={3} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <AppstoreOutlined /> Apps
         </Typography.Title>
-        <Button type="primary" onClick={() => setModalOpen(true)} disabled={!clusterId}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)} disabled={!clusterId}>
           Add app
         </Button>
       </div>

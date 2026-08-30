@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Button, Table, Modal, Form, Input, Switch, Popconfirm, Typography, message, Tag, Descriptions, Space } from 'antd';
+import {
+  ClusterOutlined,
+  PlusOutlined,
+  InfoCircleOutlined,
+  SafetyOutlined,
+  DeleteOutlined,
+  StarFilled,
+  GlobalOutlined,
+  LockOutlined,
+} from '@ant-design/icons';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
 import AccessModal from '../components/AccessModal';
@@ -73,7 +83,7 @@ export default function Clusters() {
     {
       title: 'Default',
       dataIndex: 'is_default',
-      render: (value) => (value ? <Tag color="green">default</Tag> : null),
+      render: (value) => (value ? <Tag icon={<StarFilled />} color="green">default</Tag> : null),
     },
     ...(user.is_staff ? [{ title: 'Created by', dataIndex: 'created_by_username', render: (v) => v ?? '—' }] : []),
     {
@@ -81,9 +91,11 @@ export default function Clusters() {
       dataIndex: 'is_accessible',
       render: (value, record) =>
         value ? (
-          <Tag color="green">everyone</Tag>
+          <Tag icon={<GlobalOutlined />} color="green">everyone</Tag>
         ) : (
-          <Tag color="orange">restricted{record.allowed_users?.length ? ` (${record.allowed_users.length})` : ''}</Tag>
+          <Tag icon={<LockOutlined />} color="orange">
+            restricted{record.allowed_users?.length ? ` (${record.allowed_users.length})` : ''}
+          </Tag>
         ),
     },
     {
@@ -91,16 +103,16 @@ export default function Clusters() {
       key: 'actions',
       render: (_, record) => (
         <Space>
-          <Button size="small" onClick={() => setDetail(record)}>
+          <Button size="small" icon={<InfoCircleOutlined />} onClick={() => setDetail(record)}>
             Info
           </Button>
           {user.is_staff && (
             <>
-              <Button size="small" onClick={() => setAccessRecord(record)}>
+              <Button size="small" icon={<SafetyOutlined />} onClick={() => setAccessRecord(record)}>
                 Access
               </Button>
               <Popconfirm title="Delete this cluster?" onConfirm={() => handleDelete(record.id)}>
-                <Button danger size="small">
+                <Button danger size="small" icon={<DeleteOutlined />}>
                   Delete
                 </Button>
               </Popconfirm>
@@ -113,11 +125,15 @@ export default function Clusters() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          Clusters
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, alignItems: 'center' }}>
+        <Typography.Title level={3} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <ClusterOutlined /> Clusters
         </Typography.Title>
-        {user.is_staff && <Button type="primary" onClick={() => setModalOpen(true)}>Add cluster</Button>}
+        {user.is_staff && (
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+            Add cluster
+          </Button>
+        )}
       </div>
 
       <Table rowKey="id" columns={columns} dataSource={clusters} loading={loading} />

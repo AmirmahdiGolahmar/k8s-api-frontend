@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, Card, Form, Input, Typography, Alert } from 'antd';
+import { UserOutlined, LockOutlined, DeploymentUnitOutlined, LoginOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
@@ -26,19 +27,22 @@ export default function Login() {
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <Card style={{ width: 360 }}>
-        <Typography.Title level={3} style={{ textAlign: 'center' }}>
-          k8s-api
-        </Typography.Title>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <DeploymentUnitOutlined style={{ fontSize: 32, color: '#e0914f' }} />
+          <Typography.Title level={3} style={{ margin: 0 }}>
+            k8s-api
+          </Typography.Title>
+        </div>
         {error && <Alert type="error" message={error} style={{ marginBottom: 16 }} />}
         <Form layout="vertical" onFinish={onFinish}>
           <Form.Item name="username" label="Username" rules={[{ required: true }]}>
-            <Input autoFocus />
+            <Input prefix={<UserOutlined />} autoFocus />
           </Form.Item>
           <Form.Item name="password" label="Password" rules={[{ required: true }]}>
-            <Input.Password />
+            <Input.Password prefix={<LockOutlined />} />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" block loading={submitting}>
+            <Button type="primary" htmlType="submit" block loading={submitting} icon={<LoginOutlined />}>
               Log in
             </Button>
           </Form.Item>

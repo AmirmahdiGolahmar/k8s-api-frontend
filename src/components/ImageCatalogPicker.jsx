@@ -1,7 +1,7 @@
-import { Tooltip } from 'antd';
+import { Tooltip, theme } from 'antd';
 import { APP_CATALOG } from '../data/appCatalog';
 
-function BrandIcon({ icon, size = 28 }) {
+function BrandIcon({ icon, size = 28, mutedColor }) {
   if (!icon) {
     // Pyroscope has no simple-icons entry -- generic placeholder.
     return (
@@ -10,7 +10,7 @@ function BrandIcon({ icon, size = 28 }) {
           width: size,
           height: size,
           borderRadius: 6,
-          background: '#d9d9d9',
+          background: mutedColor,
         }}
       />
     );
@@ -25,6 +25,8 @@ function BrandIcon({ icon, size = 28 }) {
 // Plugs into antd's Form.Item like a normal control: Form.Item clones its
 // child and injects `value`/`onChange`, same contract as <Input>.
 export default function ImageCatalogPicker({ value, onChange }) {
+  const { token } = theme.useToken();
+
   return (
     <div
       style={{
@@ -45,15 +47,17 @@ export default function ImageCatalogPicker({ value, onChange }) {
               alignItems: 'center',
               gap: 8,
               padding: '12px 8px',
-              borderRadius: 8,
-              border: selected ? '2px solid #1677ff' : '1px solid #e5e5e5',
+              borderRadius: token.borderRadius,
+              background: token.colorBgContainer,
+              border: selected ? `2px solid ${token.colorPrimary}` : `1px solid ${token.colorBorder}`,
               cursor: entry.enabled ? 'pointer' : 'not-allowed',
               opacity: entry.enabled ? 1 : 0.4,
               userSelect: 'none',
+              transition: 'border-color 0.15s ease',
             }}
           >
-            <BrandIcon icon={entry.icon} />
-            <span style={{ fontSize: 12, textAlign: 'center' }}>{entry.title}</span>
+            <BrandIcon icon={entry.icon} mutedColor={token.colorBorder} />
+            <span style={{ fontSize: 12, textAlign: 'center', color: token.colorText }}>{entry.title}</span>
           </div>
         );
         return entry.enabled ? (
