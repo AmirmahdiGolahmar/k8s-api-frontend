@@ -39,7 +39,7 @@ export default function AppLayout() {
             display: 'flex',
             alignItems: 'center',
             gap: 10,
-            color: '#f0b380',
+            color: '#c0aef8',
             fontWeight: 600,
             fontSize: 18,
             padding: '18px 20px',
@@ -59,7 +59,7 @@ export default function AppLayout() {
       <Layout>
         <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, paddingInline: 24 }}>
           <Space>
-            <Avatar size="small" icon={<UserOutlined />} style={{ background: '#e0914f' }} />
+            <Avatar size="small" icon={<UserOutlined />} style={{ background: '#9d7cf5' }} />
             <Typography.Text>{user.username}</Typography.Text>
             {user.is_staff && (
               <Tag icon={<CrownOutlined />} color="gold">

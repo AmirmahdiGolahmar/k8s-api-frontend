@@ -30,7 +30,7 @@ export default function Register() {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
       <Card style={{ width: 360 }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <UserAddOutlined style={{ fontSize: 32, color: '#e0914f' }} />
+          <UserAddOutlined style={{ fontSize: 32, color: '#9d7cf5' }} />
           <Typography.Title level={3} style={{ margin: 0 }}>
             Create account
           </Typography.Title>
