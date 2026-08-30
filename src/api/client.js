@@ -93,6 +93,7 @@ export const api = {
   listApps: (clusterId, namespace) => request('/app/', { params: { cluster_id: clusterId, namespace } }),
   createApp: (data) => request('/app/', { method: 'POST', body: data }),
   deleteApp: (id) => request(`/app/${id}/`, { method: 'DELETE' }),
+  refreshAppStatus: (id) => request(`/app/${id}/refresh/`, { method: 'POST' }),
 
   listBackups: (appId) => request('/backup/', { params: { app_id: appId } }),
   createBackup: (data) => request('/backup/', { method: 'POST', body: data }),

@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Button, Table, Modal, Form, Input, InputNumber, Select, Popconfirm, Typography, message, Tag } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
 import { api } from '../api/client';
+import ImageCatalogPicker from '../components/ImageCatalogPicker';
 
 const STATUS_COLORS = { active: 'green', deleting: 'orange', missing: 'red' };
 
 export default function Apps() {
   const [clusters, setClusters] = useState([]);
   const [clusterId, setClusterId] = useState(null);
+  const [namespaces, setNamespaces] = useState([]);
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [refreshingId, setRefreshingId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -34,6 +38,20 @@ export default function Apps() {
 
   useEffect(() => load(clusterId), [clusterId]);
 
+  // Same-owner namespaces the current user can actually deploy an app
+  // into -- the backend already scopes GET /namespace/ to what this user
+  // owns (or everything, if staff), so the dropdown just reflects that.
+  useEffect(() => {
+    if (!clusterId) {
+      setNamespaces([]);
+      return;
+    }
+    api
+      .listNamespaces(clusterId)
+      .then(setNamespaces)
+      .catch((err) => message.error(err.message));
+  }, [clusterId]);
+
   const handleCreate = async (values) => {
     try {
       await api.createApp({ cluster_id: clusterId, ...values });
@@ -56,6 +74,21 @@ export default function Apps() {
     }
   };
 
+  const handleRefresh = async (id) => {
+    setRefreshingId(id);
+    try {
+      // Checks the real cluster on demand rather than just re-reading the
+      // DB -- clusters.tasks.sync_app_status only runs every 2 minutes,
+      // this is what makes the button actually "live".
+      const updated = await api.refreshAppStatus(id);
+      setApps((current) => current.map((app) => (app.id === id ? updated : app)));
+    } catch (err) {
+      message.error(err.message);
+    } finally {
+      setRefreshingId(null);
+    }
+  };
+
   const columns = [
     { title: 'Name', dataIndex: 'name' },
     { title: 'Namespace', dataIndex: 'namespace' },
@@ -70,11 +103,21 @@ export default function Apps() {
       title: '',
       key: 'actions',
       render: (_, record) => (
-        <Popconfirm title="Delete this app?" onConfirm={() => handleDelete(record.id)}>
-          <Button danger size="small">
-            Delete
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button
+            size="small"
+            icon={<ReloadOutlined />}
+            loading={refreshingId === record.id}
+            onClick={() => handleRefresh(record.id)}
+          >
+            Reload
           </Button>
-        </Popconfirm>
+          <Popconfirm title="Delete this app?" onConfirm={() => handleDelete(record.id)}>
+            <Button danger size="small">
+              Delete
+            </Button>
+          </Popconfirm>
+        </div>
       ),
     },
   ];
@@ -106,6 +149,7 @@ export default function Apps() {
         onCancel={() => setModalOpen(false)}
         onOk={() => form.submit()}
         destroyOnHidden
+        width={520}
       >
         <Form layout="vertical" form={form} onFinish={handleCreate} initialValues={{ image: 'nginx:latest', replicas: 1 }}>
           <Form.Item
@@ -115,15 +159,14 @@ export default function Apps() {
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="namespace"
-            label="Namespace"
-            rules={[{ required: true, pattern: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/, message: 'Lowercase alphanumeric and "-" only.' }]}
-          >
-            <Input />
+          <Form.Item name="namespace" label="Namespace" rules={[{ required: true }]}>
+            <Select
+              placeholder={namespaces.length ? 'Select a namespace' : 'No namespaces available -- create one first'}
+              options={namespaces.map((n) => ({ value: n.name, label: n.name }))}
+            />
           </Form.Item>
-          <Form.Item name="image" label="Image">
-            <Input />
+          <Form.Item name="image" label="Image" rules={[{ required: true }]}>
+            <ImageCatalogPicker />
           </Form.Item>
           <Form.Item name="replicas" label="Replicas">
             <InputNumber min={0} style={{ width: '100%' }} />

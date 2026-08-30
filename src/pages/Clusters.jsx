@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Table, Modal, Form, Input, Switch, Popconfirm, Typography, message, Tag } from 'antd';
+import { Button, Table, Modal, Form, Input, Switch, Popconfirm, Typography, message, Tag, Descriptions, Space } from 'antd';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
 
@@ -8,6 +8,7 @@ export default function Clusters() {
   const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [detail, setDetail] = useState(null);
   const [form] = Form.useForm();
 
   const load = () => {
@@ -52,21 +53,24 @@ export default function Clusters() {
       dataIndex: 'is_default',
       render: (value) => (value ? <Tag color="green">default</Tag> : null),
     },
-    ...(user.is_staff
-      ? [
-          {
-            title: '',
-            key: 'actions',
-            render: (_, record) => (
-              <Popconfirm title="Delete this cluster?" onConfirm={() => handleDelete(record.id)}>
-                <Button danger size="small">
-                  Delete
-                </Button>
-              </Popconfirm>
-            ),
-          },
-        ]
-      : []),
+    {
+      title: '',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button size="small" onClick={() => setDetail(record)}>
+            Info
+          </Button>
+          {user.is_staff && (
+            <Popconfirm title="Delete this cluster?" onConfirm={() => handleDelete(record.id)}>
+              <Button danger size="small">
+                Delete
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
+    },
   ];
 
   return (
@@ -97,7 +101,7 @@ export default function Clusters() {
           <Form.Item
             name="kubeconfig"
             label="Kubeconfig"
-            extra="Leave blank to use the backend's local/in-cluster default kubeconfig."
+            extra="Leave blank to use the backend's local/in-cluster default kubeconfig. Write-only: it can't be viewed again after this, even by staff."
           >
             <Input.TextArea rows={6} />
           </Form.Item>
@@ -105,6 +109,22 @@ export default function Clusters() {
             <Switch />
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal title={detail?.name} open={!!detail} onCancel={() => setDetail(null)} footer={null}>
+        {detail && (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="Name">{detail.name}</Descriptions.Item>
+            <Descriptions.Item label="Description">{detail.description || '—'}</Descriptions.Item>
+            <Descriptions.Item label="API server">{detail.api_server || '—'}</Descriptions.Item>
+            <Descriptions.Item label="Default cluster">{detail.is_default ? 'Yes' : 'No'}</Descriptions.Item>
+            <Descriptions.Item label="Created">{detail.created_at}</Descriptions.Item>
+            <Descriptions.Item label="Updated">{detail.updated_at}</Descriptions.Item>
+            <Descriptions.Item label="Kubeconfig">
+              Not shown — write-only, never returned by the API once submitted.
+            </Descriptions.Item>
+          </Descriptions>
+        )}
       </Modal>
     </div>
   );
