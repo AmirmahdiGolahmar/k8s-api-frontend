@@ -91,11 +91,17 @@ export const api = {
   listClusters: () => request('/cluster/'),
   createCluster: (data) => request('/cluster/', { method: 'POST', body: data }),
   deleteCluster: (id) => request(`/cluster/${id}/`, { method: 'DELETE' }),
+  // Staff-only: is_accessible / allowed_users (list of user ids).
+  updateClusterAccess: (id, data) => request(`/cluster/${id}/`, { method: 'PATCH', body: data }),
 
   listNamespaces: (clusterId) => request('/namespace/', { params: { cluster_id: clusterId } }),
   createNamespace: (clusterId, name) =>
     request('/namespace/', { method: 'POST', body: { cluster_id: clusterId, name } }),
   deleteNamespace: (id) => request(`/namespace/${id}/`, { method: 'DELETE' }),
+  // Staff-only: is_accessible / allowed_user_ids.
+  updateNamespaceAccess: (id, data) => request(`/namespace/${id}/`, { method: 'PATCH', body: data }),
+
+  listUsers: () => request('/auth/users/'),
 
   listApps: (clusterId, namespace) => request('/app/', { params: { cluster_id: clusterId, namespace } }),
   createApp: (data) => request('/app/', { method: 'POST', body: data }),

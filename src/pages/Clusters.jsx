@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react';
 import { Button, Table, Modal, Form, Input, Switch, Popconfirm, Typography, message, Tag, Descriptions, Space } from 'antd';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
+import AccessModal from '../components/AccessModal';
 
 export default function Clusters() {
   const { user } = useAuth();
   const [clusters, setClusters] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [detail, setDetail] = useState(null);
+  const [accessRecord, setAccessRecord] = useState(null);
   const [form] = Form.useForm();
 
   const load = () => {
@@ -21,6 +24,14 @@ export default function Clusters() {
   };
 
   useEffect(load, []);
+
+  // Only staff can act on this, and only staff can even call it -- no
+  // point fetching for a regular user who'll never see the Access modal.
+  useEffect(() => {
+    if (user.is_staff) {
+      api.listUsers().then(setUsers).catch((err) => message.error(err.message));
+    }
+  }, [user.is_staff]);
 
   const handleCreate = async (values) => {
     try {
@@ -44,6 +55,17 @@ export default function Clusters() {
     }
   };
 
+  const handleSaveAccess = async (values) => {
+    try {
+      await api.updateClusterAccess(accessRecord.id, values);
+      message.success('Access updated.');
+      setAccessRecord(null);
+      load();
+    } catch (err) {
+      message.error(err.message);
+    }
+  };
+
   const columns = [
     { title: 'Name', dataIndex: 'name' },
     { title: 'Description', dataIndex: 'description' },
@@ -54,6 +76,16 @@ export default function Clusters() {
       render: (value) => (value ? <Tag color="green">default</Tag> : null),
     },
     {
+      title: 'Access',
+      dataIndex: 'is_accessible',
+      render: (value, record) =>
+        value ? (
+          <Tag color="green">everyone</Tag>
+        ) : (
+          <Tag color="orange">restricted{record.allowed_users?.length ? ` (${record.allowed_users.length})` : ''}</Tag>
+        ),
+    },
+    {
       title: '',
       key: 'actions',
       render: (_, record) => (
@@ -62,11 +94,16 @@ export default function Clusters() {
             Info
           </Button>
           {user.is_staff && (
-            <Popconfirm title="Delete this cluster?" onConfirm={() => handleDelete(record.id)}>
-              <Button danger size="small">
-                Delete
+            <>
+              <Button size="small" onClick={() => setAccessRecord(record)}>
+                Access
               </Button>
-            </Popconfirm>
+              <Popconfirm title="Delete this cluster?" onConfirm={() => handleDelete(record.id)}>
+                <Button danger size="small">
+                  Delete
+                </Button>
+              </Popconfirm>
+            </>
           )}
         </Space>
       ),
@@ -126,6 +163,15 @@ export default function Clusters() {
           </Descriptions>
         )}
       </Modal>
+
+      <AccessModal
+        open={!!accessRecord}
+        title={accessRecord ? `Access — ${accessRecord.name}` : ''}
+        record={accessRecord}
+        users={users}
+        onCancel={() => setAccessRecord(null)}
+        onSave={handleSaveAccess}
+      />
     </div>
   );
 }
