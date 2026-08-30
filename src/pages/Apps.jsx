@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Button, Table, Modal, Form, Input, InputNumber, Select, Popconfirm, Typography, message, Tag } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
+import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
 import ImageCatalogPicker from '../components/ImageCatalogPicker';
 
 const STATUS_COLORS = { active: 'green', deleting: 'orange', missing: 'red' };
 
 export default function Apps() {
+  const { user } = useAuth();
   const [clusters, setClusters] = useState([]);
   const [clusterId, setClusterId] = useState(null);
   const [namespaces, setNamespaces] = useState([]);
@@ -94,6 +96,7 @@ export default function Apps() {
     { title: 'Namespace', dataIndex: 'namespace' },
     { title: 'Image', dataIndex: 'image' },
     { title: 'Replicas', dataIndex: 'replicas' },
+    ...(user.is_staff ? [{ title: 'Owner', dataIndex: 'owner_username', render: (v) => v ?? '—' }] : []),
     {
       title: 'Status',
       dataIndex: 'status',

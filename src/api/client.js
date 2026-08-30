@@ -100,6 +100,10 @@ export const api = {
   deleteNamespace: (id) => request(`/namespace/${id}/`, { method: 'DELETE' }),
   // Staff-only: is_accessible / allowed_user_ids.
   updateNamespaceAccess: (id, data) => request(`/namespace/${id}/`, { method: 'PATCH', body: data }),
+  // Staff-only: every namespace that actually exists in the cluster (not
+  // just DB-tracked ones) -- kube-system, default, anything created
+  // outside this app.
+  listLiveNamespaces: (clusterId) => request('/namespace/live/', { params: { cluster_id: clusterId } }),
 
   listUsers: () => request('/auth/users/'),
 

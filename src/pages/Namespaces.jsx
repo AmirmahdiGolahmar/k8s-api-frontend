@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Table, Modal, Form, Input, Select, Popconfirm, Typography, message, Tag, Space } from 'antd';
+import { Button, Table, Modal, Form, Input, Select, Popconfirm, Typography, message, Tag, Space, Segmented } from 'antd';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../api/client';
 import AccessModal from '../components/AccessModal';
@@ -14,6 +14,13 @@ export default function Namespaces() {
   const [modalOpen, setModalOpen] = useState(false);
   const [accessRecord, setAccessRecord] = useState(null);
   const [form] = Form.useForm();
+
+  // Staff can switch to seeing every namespace that actually exists in the
+  // cluster (kube-system, default, anything created outside this app) --
+  // that view reads straight from k8s and has no id/owner/delete/access.
+  const [view, setView] = useState('tracked');
+  const [liveNamespaces, setLiveNamespaces] = useState([]);
+  const [liveLoading, setLiveLoading] = useState(false);
 
   useEffect(() => {
     api
@@ -41,7 +48,20 @@ export default function Namespaces() {
       .finally(() => setLoading(false));
   };
 
+  const loadLive = (id) => {
+    if (!id) return;
+    setLiveLoading(true);
+    api
+      .listLiveNamespaces(id)
+      .then(setLiveNamespaces)
+      .catch((err) => message.error(err.message))
+      .finally(() => setLiveLoading(false));
+  };
+
   useEffect(() => load(clusterId), [clusterId]);
+  useEffect(() => {
+    if (view === 'live') loadLive(clusterId);
+  }, [clusterId, view]);
 
   const handleCreate = async ({ name }) => {
     try {
@@ -81,8 +101,9 @@ export default function Namespaces() {
     }
   };
 
-  const columns = [
+  const trackedColumns = [
     { title: 'Name', dataIndex: 'name' },
+    ...(user.is_staff ? [{ title: 'Owner', dataIndex: 'owner_username', render: (v) => v ?? '—' }] : []),
     ...(user.is_staff
       ? [
           {
@@ -90,7 +111,7 @@ export default function Namespaces() {
             dataIndex: 'is_accessible',
             render: (value, record) =>
               value ? (
-                <Tag color="green">owner</Tag>
+                <Tag color="green">accessible</Tag>
               ) : (
                 <Tag color="orange">
                   restricted{record.allowed_users?.length ? ` (${record.allowed_users.length})` : ''}
@@ -119,6 +140,15 @@ export default function Namespaces() {
     },
   ];
 
+  // Read-only: these rows may not even have a DB row (kube-system, etc),
+  // so there's no id to delete/manage access by.
+  const liveColumns = [
+    { title: 'Name', dataIndex: 'name' },
+    { title: 'Status', dataIndex: 'status' },
+    { title: 'UID', dataIndex: 'uid' },
+    { title: 'Created', dataIndex: 'created_at' },
+  ];
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -130,15 +160,31 @@ export default function Namespaces() {
         </Button>
       </div>
 
-      <Select
-        style={{ width: 280, marginBottom: 16 }}
-        placeholder="Select a cluster"
-        value={clusterId}
-        onChange={setClusterId}
-        options={clusters.map((c) => ({ value: c.id, label: c.name }))}
-      />
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
+        <Select
+          style={{ width: 280 }}
+          placeholder="Select a cluster"
+          value={clusterId}
+          onChange={setClusterId}
+          options={clusters.map((c) => ({ value: c.id, label: c.name }))}
+        />
+        {user.is_staff && (
+          <Segmented
+            value={view}
+            onChange={setView}
+            options={[
+              { label: 'Tracked by this app', value: 'tracked' },
+              { label: 'All in cluster (live)', value: 'live' },
+            ]}
+          />
+        )}
+      </div>
 
-      <Table rowKey="id" columns={columns} dataSource={namespaces} loading={loading} />
+      {view === 'tracked' ? (
+        <Table rowKey="id" columns={trackedColumns} dataSource={namespaces} loading={loading} />
+      ) : (
+        <Table rowKey="uid" columns={liveColumns} dataSource={liveNamespaces} loading={liveLoading} />
+      )}
 
       <Modal
         title="Add namespace"

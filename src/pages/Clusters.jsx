@@ -75,6 +75,7 @@ export default function Clusters() {
       dataIndex: 'is_default',
       render: (value) => (value ? <Tag color="green">default</Tag> : null),
     },
+    ...(user.is_staff ? [{ title: 'Created by', dataIndex: 'created_by_username', render: (v) => v ?? '—' }] : []),
     {
       title: 'Access',
       dataIndex: 'is_accessible',
@@ -155,6 +156,7 @@ export default function Clusters() {
             <Descriptions.Item label="Description">{detail.description || '—'}</Descriptions.Item>
             <Descriptions.Item label="API server">{detail.api_server || '—'}</Descriptions.Item>
             <Descriptions.Item label="Default cluster">{detail.is_default ? 'Yes' : 'No'}</Descriptions.Item>
+            <Descriptions.Item label="Created by">{detail.created_by_username ?? '—'}</Descriptions.Item>
             <Descriptions.Item label="Created">{detail.created_at}</Descriptions.Item>
             <Descriptions.Item label="Updated">{detail.updated_at}</Descriptions.Item>
             <Descriptions.Item label="Kubeconfig">
